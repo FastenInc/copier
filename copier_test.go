@@ -42,11 +42,6 @@ type HaveEmbed struct {
 }
 
 type TypeStruct1 struct {
-	Field1 string
-	Field2 string
-	Field3 TypeStruct2
-	Field4 *TypeStruct2
-	Field5 []*TypeStruct2
 }
 
 type TypeStruct2 struct {
@@ -192,56 +187,19 @@ func TestPointerArray(t *testing.T) {
 	}()
 
 	ts := []*TypeStruct1{
-		{
-			Field1: "str1",
-			Field2: "str2",
-			Field3: TypeStruct2{
-
-				Field1: 666,
-				Field2: "str2",
-			},
-			Field4: &TypeStruct2{
-
-				Field1: 666,
-				Field2: "str2",
-			},
-			Field5: []*TypeStruct2{
-				{
-					Field1: 666,
-					Field2: "str2",
-				},
-			},
-		},
+		{},
 	}
 
 	ts3 := []*TypeStruct3{}
 
-	Copy(&ts3, &ts)
+	err := Copy(&ts3, &ts)
 
-	for i := range ts {
-		if v, ok := ts3[i].Field1.(string); !ok {
-			t.Error("Assign to interface{} type did not succeed")
-		} else if v != "str1" {
-			t.Error("String haven't been copied correctly")
-		}
+	if nil != err {
+		t.Errorf("copy error %v", err)
+	}
 
-		if ts3[i].Field2 != ts[i].Field2 {
-			t.Error("String haven't been copied correctly")
-		}
-
-		if ts3[i].Field3.Field2 != ts[i].Field3.Field2 {
-			t.Errorf("String haven't been copied correctly %+v vs %+v", ts3[i].Field3, ts[i].Field3)
-		}
-
-		if ts3[i].Field4 == nil {
-			t.Error("nil Field4")
-		} else if ts3[i].Field4.Field2 != ts[i].Field4.Field2 {
-			t.Errorf("Field4 differs %v", ts3[i].Field4)
-		}
-
-		if len(ts3[i].Field5) != len(ts[i].Field5) {
-			t.Errorf("Field5 size differs %v and %v", len(ts3[i].Field5), len(ts[i].Field5))
-		}
+	if len(ts3) != len(ts) {
+		t.Errorf("Arrays of different length: original %d and destination %d", len(ts), len(ts3))
 	}
 }
 

@@ -10,10 +10,8 @@ import (
 
 func Copy(toValue interface{}, fromValue interface{}) (err error) {
 	var (
-		isSlice  bool
-		fromType reflect.Type
-		toType   reflect.Type
-		amount   int
+		isSlice bool
+		amount  int
 	)
 	var accumulatedError error
 
@@ -22,40 +20,32 @@ func Copy(toValue interface{}, fromValue interface{}) (err error) {
 
 	log.Infof("COPY toValue = %+v (%+v) fromValue = %+v (%+v)", toValue, from.Kind(), fromValue, to.Kind())
 
-	if to.Kind() == reflect.Slice {
-		isSlice = true
-		if from.Kind() == reflect.Slice {
-			fromType = from.Type().Elem()
-			if fromType.Kind() == reflect.Ptr {
-				fromType = fromType.Elem()
-			}
-			amount = from.Len()
-		} else {
-			fromType = from.Type()
-			amount = 1
-		}
+	if to.Kind() == reflect.Ptr && to.Elem().Kind() != reflect.Slice {
+		return Copy(to.Elem().Addr(), from.Elem().Addr())
+	}
 
-		toType = to.Type().Elem()
-		if toType.Kind() == reflect.Ptr {
-			toType = toType.Elem()
-		}
+	if from.Kind() == reflect.Slice {
+		return fmt.Errorf("cannot copy slice by-value, try to pass it by pointer")
+	} else if from.Kind() == reflect.Ptr && from.Elem().Kind() == reflect.Slice {
+		isSlice = true
+		amount = from.Elem().Len()
 	} else {
-		fromType = from.Type()
-		toType = to.Type()
 		amount = 1
 	}
 
-	log.Infof("from.Kind = %+v to.Kind = %+v isSlice = %t", from.Kind(), to.Kind(), isSlice)
+	log.Infof("amount = %d isSlice = %t", amount, isSlice)
+
 	if isSlice {
 		if to.IsNil() {
+			log.Infof("[IsNil]")
 			to.Set(reflect.MakeSlice(to.Type(), 0, amount))
 		}
-
 		if from.Kind() == reflect.Slice {
+			newSlice := reflect.MakeSlice(to.Type(), amount, amount)
+			originalLen := to.Len()
+			log.Infof("[11123] to = %+v newSlice = %+v reflect.AppendSlice(to, newSlice) = %+v", to, newSlice, reflect.AppendSlice(to, newSlice))
+			to.Set(reflect.AppendSlice(to, newSlice))
 			if from.Type().Elem().Kind() == reflect.Ptr {
-				newSlice := reflect.MakeSlice(to.Type(), amount, amount)
-				originalLen := to.Len()
-				to.Set(reflect.AppendSlice(to, newSlice))
 
 				for i := 0; i < amount; i++ {
 					var newT reflect.Value
@@ -76,9 +66,6 @@ func Copy(toValue interface{}, fromValue interface{}) (err error) {
 					}
 				}
 			} else if from.Type().Elem().Kind() == reflect.Struct {
-				newSlice := reflect.MakeSlice(to.Type(), amount, amount)
-				originalLen := to.Len()
-				to.Set(reflect.AppendSlice(to, newSlice))
 				for i := 0; i < amount; i++ {
 					err := Copy(to.Index(originalLen+i).Addr().Interface(), from.Index(i).Addr().Interface())
 					if nil != err {
