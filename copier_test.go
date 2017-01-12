@@ -4,7 +4,7 @@ import (
 	// "encoding/json"
 
 	"reflect"
-	// "unsafe"
+	"unsafe"
 
 	"testing"
 )
@@ -523,7 +523,7 @@ func TestCopyStruct(t *testing.T) {
 // 	}
 // }
 
-// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type GoaCommonRoute struct {
 	Distance *float64
@@ -615,253 +615,253 @@ func TestPointerArrayComplex(t *testing.T) {
 	}
 }
 
-// func TestInternalsExactValue(t *testing.T) {
-// 	defer panicHandler(t)
+func TestInternalsExactValue(t *testing.T) {
+	defer panicHandler(t)
 
-// 	t1 := int64(666)
-// 	t2 := &t1
-// 	t3 := &t2
-// 	t4 := &t3
+	t1 := int64(666)
+	t2 := &t1
+	t3 := &t2
+	t4 := &t3
 
-// 	if exactValue(reflect.ValueOf(t4)).Kind() != reflect.Int64 {
-// 		t.Errorf("exact value mismatch: expected %v got %+v", reflect.Int64, exactValue(reflect.ValueOf(t4)).Kind())
-// 		return
-// 	}
-// 	if exactValue(reflect.ValueOf(t4)).Int() != t1 {
-// 		t.Errorf("exact value mismatch: expected %d got %+v", t1, exactValue(reflect.ValueOf(t4)).Int())
-// 		return
-// 	}
+	if exactValue(reflect.ValueOf(t4)).Kind() != reflect.Int64 {
+		t.Errorf("exact value mismatch: expected %v got %+v", reflect.Int64, exactValue(reflect.ValueOf(t4)).Kind())
+		return
+	}
+	if exactValue(reflect.ValueOf(t4)).Int() != t1 {
+		t.Errorf("exact value mismatch: expected %d got %+v", t1, exactValue(reflect.ValueOf(t4)).Int())
+		return
+	}
 
-// 	if exactValue(reflect.ValueOf(t2)).Kind() != reflect.Int64 {
-// 		t.Errorf("exact value mismatch: expected %v got %+v", reflect.Int64, exactValue(reflect.ValueOf(t2)).Kind())
-// 		return
-// 	}
-// 	if exactValue(reflect.ValueOf(t2)).Int() != t1 {
-// 		t.Errorf("exact value mismatch: expected %d got %+v", t1, exactValue(reflect.ValueOf(t2)).Int())
-// 		return
-// 	}
-// }
+	if exactValue(reflect.ValueOf(t2)).Kind() != reflect.Int64 {
+		t.Errorf("exact value mismatch: expected %v got %+v", reflect.Int64, exactValue(reflect.ValueOf(t2)).Kind())
+		return
+	}
+	if exactValue(reflect.ValueOf(t2)).Int() != t1 {
+		t.Errorf("exact value mismatch: expected %d got %+v", t1, exactValue(reflect.ValueOf(t2)).Int())
+		return
+	}
+}
 
-// func TestInternalsReductPointers(t *testing.T) {
-// 	defer panicHandler(t)
+func TestInternalsReductPointers(t *testing.T) {
+	defer panicHandler(t)
 
-// 	t1 := "la-la-la"
-// 	t2 := &t1
-// 	t3 := &t2
-// 	t4 := &t3
+	t1 := "la-la-la"
+	t2 := &t1
+	t3 := &t2
+	t4 := &t3
 
-// 	reducted := reductPointers(reflect.ValueOf(t4))
+	reducted := reductPointers(reflect.ValueOf(t4))
 
-// 	if reducted.Kind() != reflect.Ptr {
-// 		t.Errorf("wrong reducted kind")
-// 		return
-// 	}
+	if reducted.Kind() != reflect.Ptr {
+		t.Errorf("wrong reducted kind")
+		return
+	}
 
-// 	if reducted.Elem().String() != t1 {
-// 		t.Errorf("wrong reducted value")
-// 		return
-// 	}
-// }
+	if reducted.Elem().String() != t1 {
+		t.Errorf("wrong reducted value")
+		return
+	}
+}
 
-// func TestInternalsDeepFields(t *testing.T) {
-// 	defer panicHandler(t)
+func TestInternalsDeepFields(t *testing.T) {
+	defer panicHandler(t)
 
-// 	dummy := TypeStruct3{}
+	dummy := TypeStruct3{}
 
-// 	fields := deepFields(reflect.TypeOf(dummy))
+	fields := deepFields(reflect.TypeOf(dummy))
 
-// 	fieldsExpected := []string{"Field1", "Field2", "Field3", "Field4", "Field5"}
+	fieldsExpected := []string{"Field1", "Field2", "Field3", "Field4", "Field5"}
 
-// 	if len(fields) != len(fieldsExpected) {
-// 		t.Errorf("fields count mismatch")
-// 		return
-// 	}
+	if len(fields) != len(fieldsExpected) {
+		t.Errorf("fields count mismatch")
+		return
+	}
 
-// 	for index := range fields {
-// 		if fields[index] != fieldsExpected[index] {
-// 			t.Errorf("fields mismatch: expected %s got %s", fieldsExpected[index], fields[index])
-// 			return
-// 		}
-// 	}
+	for index := range fields {
+		if fields[index] != fieldsExpected[index] {
+			t.Errorf("fields mismatch: expected %s got %s", fieldsExpected[index], fields[index])
+			return
+		}
+	}
 
-// 	dummy2 := &TypeStruct4{}
-// 	fieldsExpected = []string{"field1", "Field2", "Field1"}
+	dummy2 := &TypeStruct4{}
+	fieldsExpected = []string{"Field2", "Field1"}
 
-// 	fields = deepFields(reflect.TypeOf(dummy2))
+	fields = deepFields(reflect.TypeOf(dummy2))
 
-// 	if len(fields) != len(fieldsExpected) {
-// 		t.Errorf("fields count mismatch %v", fields)
-// 		return
-// 	}
+	if len(fields) != len(fieldsExpected) {
+		t.Errorf("fields count mismatch %v", fields)
+		return
+	}
 
-// 	for index := range fields {
-// 		if fields[index] != fieldsExpected[index] {
-// 			t.Errorf("fields mismatch: expected %s got %s", fieldsExpected[index], fields[index])
-// 			return
-// 		}
-// 	}
-// }
+	for index := range fields {
+		if fields[index] != fieldsExpected[index] {
+			t.Errorf("fields mismatch: expected %s got %s", fieldsExpected[index], fields[index])
+			return
+		}
+	}
+}
 
-// func TestInternalsFieldByName(t *testing.T) {
-// 	defer panicHandler(t)
+func TestInternalsFieldByName(t *testing.T) {
+	defer panicHandler(t)
 
-// 	dummyptr := &TypeStruct4{}
+	dummyptr := &TypeStruct4{}
 
-// 	dummy := &TypeStruct3{
-// 		Field1: "razdvatri",
-// 		Field2: "dldll",
-// 		Field4: dummyptr,
-// 		Field5: []*TypeStruct4{dummyptr},
-// 	}
+	dummy := &TypeStruct3{
+		Field1: "razdvatri",
+		Field2: "dldll",
+		Field4: dummyptr,
+		Field5: []*TypeStruct4{dummyptr},
+	}
 
-// 	dummy2 := &dummy
-// 	dummy3 := &dummy2
+	dummy2 := &dummy
+	dummy3 := &dummy2
 
-// 	base := reflect.ValueOf(dummy3)
+	base := reflect.ValueOf(dummy3)
 
-// 	f1 := fieldByName(base, "Field1")
-// 	if f1.Interface().(string) != dummy.Field1 {
-// 		t.Errorf("fields mismatch: expected %s got %s", dummy.Field1, f1.Interface())
-// 		return
-// 	}
+	f1 := fieldByName(base, "Field1")
+	if f1.Interface().(string) != dummy.Field1 {
+		t.Errorf("fields mismatch: expected %s got %s", dummy.Field1, f1.Interface())
+		return
+	}
 
-// 	f2 := fieldByName(base, "Field2")
-// 	if f2.String() != dummy.Field2 {
-// 		t.Errorf("fields mismatch: expected %s got %s", dummy.Field2, f2.String())
-// 		return
-// 	}
+	f2 := fieldByName(base, "Field2")
+	if f2.String() != dummy.Field2 {
+		t.Errorf("fields mismatch: expected %s got %s", dummy.Field2, f2.String())
+		return
+	}
 
-// 	f4 := fieldByName(base, "Field4")
-// 	if ((*TypeStruct4)(unsafe.Pointer(f4.Pointer()))) != dummy.Field4 {
-// 		t.Errorf("fields mismatch: expected %+v got %+v", dummy.Field4, f4.Pointer())
-// 		return
-// 	}
+	f4 := fieldByName(base, "Field4")
+	if ((*TypeStruct4)(unsafe.Pointer(f4.Pointer()))) != dummy.Field4 {
+		t.Errorf("fields mismatch: expected %+v got %+v", dummy.Field4, f4.Pointer())
+		return
+	}
 
-// 	f5 := fieldByName(base, "Field5")
-// 	if len(f5.Interface().([]*TypeStruct4)) != len(dummy.Field5) {
-// 		t.Errorf("fields mismatch: expected %+v got %+v", dummy.Field5, f5.Interface().([]*TypeStruct4))
-// 		return
-// 	}
+	f5 := fieldByName(base, "Field5")
+	if len(f5.Interface().([]*TypeStruct4)) != len(dummy.Field5) {
+		t.Errorf("fields mismatch: expected %+v got %+v", dummy.Field5, f5.Interface().([]*TypeStruct4))
+		return
+	}
 
-// 	if f5.Interface().([]*TypeStruct4)[0] != dummy.Field5[0] {
-// 		t.Errorf("fields mismatch: expected %+v got %+v", dummy.Field5, f5.Interface().([]*TypeStruct4))
-// 		return
-// 	}
-// }
+	if f5.Interface().([]*TypeStruct4)[0] != dummy.Field5[0] {
+		t.Errorf("fields mismatch: expected %+v got %+v", dummy.Field5, f5.Interface().([]*TypeStruct4))
+		return
+	}
+}
 
-// func TestInternalsMethodByName(t *testing.T) {
-// 	defer panicHandler(t)
+func TestInternalsMethodByName(t *testing.T) {
+	defer panicHandler(t)
 
-// 	dummyptr := &TypeStruct5{
-// 		field1: "raz",
-// 		Field2: "dva",
-// 	}
+	dummyptr := &TypeStruct5{
+		field1: "raz",
+		Field2: "dva",
+	}
 
-// 	dummy := &dummyptr
-// 	dummy2 := &dummy
-// 	dummy3 := &dummy2
+	dummy := &dummyptr
+	dummy2 := &dummy
+	dummy3 := &dummy2
 
-// 	base := reflect.ValueOf(dummy3)
+	base := reflect.ValueOf(dummy3)
 
-// 	f1 := methodByName(base, "Field1")
-// 	if !f1.IsValid() {
-// 		t.Errorf("invalid method")
-// 		return
-// 	}
+	f1 := methodByName(base, "Field1")
+	if !f1.IsValid() {
+		t.Errorf("invalid method")
+		return
+	}
 
-// 	expected := "tri"
-// 	f1.Call([]reflect.Value{reflect.ValueOf(expected)})
-// 	if dummyptr.field1 != expected {
-// 		t.Errorf("wrong method results")
-// 		return
-// 	}
-// }
+	expected := "tri"
+	f1.Call([]reflect.Value{reflect.ValueOf(expected)})
+	if dummyptr.field1 != expected {
+		t.Errorf("wrong method results")
+		return
+	}
+}
 
-// type DeepCopyPtrTest struct {
-// 	Field1 **string
-// 	Field2 interface{}
-// 	Field3 *TypeStruct4
-// }
+type DeepCopyPtrTest struct {
+	Field1 **string
+	Field2 interface{}
+	Field3 *TypeStruct4
+}
 
-// func TestInternalsDeepCopyPtr(t *testing.T) {
-// 	defer panicHandler(t)
+func TestInternalsDeepCopyPtr(t *testing.T) {
+	defer panicHandler(t)
 
-// 	dummyptr := &TypeStruct4{}
+	dummyptr := &TypeStruct4{}
 
-// 	strExpected := "razdvatri"
-// 	strExpectedPtr := &strExpected
+	strExpected := "razdvatri"
+	strExpectedPtr := &strExpected
 
-// 	dummy := &DeepCopyPtrTest{
-// 		Field1: &strExpectedPtr,
-// 		Field2: strExpectedPtr,
-// 		Field3: dummyptr,
-// 	}
+	dummy := &DeepCopyPtrTest{
+		Field1: &strExpectedPtr,
+		Field2: strExpectedPtr,
+		Field3: dummyptr,
+	}
 
-// 	dummy2 := &dummy
-// 	dummy3 := &dummy2
+	dummy2 := &dummy
+	dummy3 := &dummy2
 
-// 	dummyDest := &DeepCopyPtrTest{}
-// 	dummyDest2 := &dummyDest
-// 	dummyDest3 := &dummyDest2
+	dummyDest := &DeepCopyPtrTest{}
+	dummyDest2 := &dummyDest
+	dummyDest3 := &dummyDest2
 
-// 	src := reflect.ValueOf(dummy3)
-// 	dest := reflect.ValueOf(dummyDest3)
+	src := reflect.ValueOf(dummy3)
+	dest := reflect.ValueOf(dummyDest3)
 
-// 	d1 := fieldByName(dest, "Field1")
-// 	s1 := fieldByName(src, "Field1")
+	d1 := fieldByName(dest, "Field1")
+	s1 := fieldByName(src, "Field1")
 
-// 	copied, err := tryDeepCopyPtr(d1, s1, nil)
-// 	if !copied || err != nil {
-// 		t.Errorf("error deep copy: copied %t err %v", copied, err)
-// 		return
-// 	}
+	copied, err := tryDeepCopyPtr(d1, s1, nil)
+	if !copied || err != nil {
+		t.Errorf("error deep copy: copied %t err %v", copied, err)
+		return
+	}
 
-// 	d2 := fieldByName(dest, "Field3")
-// 	s2 := fieldByName(src, "Field3")
+	d2 := fieldByName(dest, "Field3")
+	s2 := fieldByName(src, "Field3")
 
-// 	copied, err = tryDeepCopyPtr(d2, s2, nil)
-// 	if !copied || err != nil {
-// 		t.Errorf("error deep copy: copied %t err %v", copied, err)
-// 		return
-// 	}
+	copied, err = tryDeepCopyPtr(d2, s2, nil)
+	if !copied || err != nil {
+		t.Errorf("error deep copy: copied %t err %v", copied, err)
+		return
+	}
 
-// 	if dummyDest.Field1 == nil || *dummyDest.Field1 == nil || **dummy.Field1 != **dummyDest.Field1 {
-// 		t.Errorf("field mismatch: expected %v got %v", dummy.Field1, dummyDest.Field1)
-// 	}
+	if dummyDest.Field1 == nil || *dummyDest.Field1 == nil || **dummy.Field1 != **dummyDest.Field1 {
+		t.Errorf("field mismatch: expected %v got %v", dummy.Field1, dummyDest.Field1)
+	}
 
-// 	if dummyDest.Field3 == nil || dummy.Field3.field1 != dummyDest.Field3.field1 {
-// 		t.Errorf("field mismatch: expected %v got %v", dummy.Field3, dummyDest.Field3)
-// 	}
-// }
+	if dummyDest.Field3 == nil || dummy.Field3.field1 != dummyDest.Field3.field1 {
+		t.Errorf("field mismatch: expected %v got %v", dummy.Field3, dummyDest.Field3)
+	}
+}
 
-// func TestInternalsDeepCopyStruct(t *testing.T) {
-// 	defer panicHandler(t)
+func TestInternalsDeepCopyStruct(t *testing.T) {
+	defer panicHandler(t)
 
-// 	dummy := &TypeStruct1{
-// 		Field3: TypeStruct2{
-// 			Field1: 12,
-// 			Field2: "tri",
-// 		},
-// 	}
+	dummy := &TypeStruct1{
+		Field3: TypeStruct2{
+			Field1: 12,
+			Field2: "tri",
+		},
+	}
 
-// 	dummy2 := &dummy
-// 	dummy3 := &dummy2
+	dummy2 := &dummy
+	dummy3 := &dummy2
 
-// 	dummyDest := &TypeStruct1{}
-// 	dummyDest2 := &dummyDest
-// 	dummyDest3 := &dummyDest2
+	dummyDest := &TypeStruct1{}
+	dummyDest2 := &dummyDest
+	dummyDest3 := &dummyDest2
 
-// 	src := reflect.ValueOf(dummy3)
-// 	dest := reflect.ValueOf(dummyDest3)
+	src := reflect.ValueOf(dummy3)
+	dest := reflect.ValueOf(dummyDest3)
 
-// 	d1 := fieldByName(dest, "Field3")
-// 	s1 := fieldByName(src, "Field3")
+	d1 := fieldByName(dest, "Field3")
+	s1 := fieldByName(src, "Field3")
 
-// 	copied, err := tryDeepCopyStruct(d1, s1, nil)
-// 	if !copied || err != nil {
-// 		t.Errorf("error deep copy: copied %t err %v", copied, err)
-// 	}
-// }
+	copied, err := tryDeepCopyStruct(d1, s1, nil)
+	if !copied || err != nil {
+		t.Errorf("error deep copy: copied %t err %v", copied, err)
+	}
+}
 
 func panicHandler(t *testing.T) {
 	if r := recover(); r != nil {
