@@ -5,6 +5,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"reflect"
+	"strings"
 )
 
 func Copy(toValue interface{}, fromValue interface{}) (err error) {
@@ -47,7 +48,7 @@ func copyImpl(to reflect.Value, from reflect.Value) error {
 		isSlice = true
 	}
 
-	if toKind == reflect.Struct || toKind == reflect.Ptr && to.Type().Elem().Kind() == reflect.Struct {
+	if toKind == reflect.Struct || toReducted.IsValid() && toReducted.Kind() == reflect.Ptr && toReducted.Elem().IsValid() && toReducted.Type().Elem().Kind() == reflect.Struct {
 		isStruct = true
 	}
 
@@ -63,10 +64,11 @@ func copyImpl(to reflect.Value, from reflect.Value) error {
 		return nil
 	}
 
+	log.Infof("toReducted.Type() = %+v isStruct = %t", toReducted.Type(), isStruct)
 	// destination is a struct
 	if isStruct {
 		for _, name := range deepFields(toReducted.Type()) {
-
+			log.Infof("NAME = %s", name)
 			fromField := fieldByName(fromReducted, name)
 			fromMethod := methodByName(fromReducted, name)
 			log.Errorf("name = %+v fromField = %+v fromMethod = %+v", name, fromField, fromMethod)
@@ -84,7 +86,7 @@ func copyImpl(to reflect.Value, from reflect.Value) error {
 			toField := fieldByName(toReducted, name)
 			log.Errorf("toField = %+v", toField)
 
-			// if struct field is a slice we must create it here, deeper field will be unsettable
+			// if struct field is a slice we must create it here
 			if toField.IsValid() && toField.Kind() == reflect.Slice && toField.IsNil() {
 				capacity := 1
 				if from.Kind() == reflect.Slice {
@@ -232,11 +234,11 @@ func tryDeepCopyPtr(toField reflect.Value, fromField reflect.Value, accumulatedE
 			toField = reductPointers(toField)
 		}
 
-		// toExact := exactValue(toField)
-		// fromExact := exactValue(fromField)
+		toExact := exactValue(toField)
+		fromExact := exactValue(fromField)
 
 		log.Infof("DEEP PTR")
-		err := copyImpl(toField, fromField)
+		err := copyImpl(toExact, fromExact)
 
 		if nil != err {
 			copied = false
@@ -324,6 +326,7 @@ func deepFields(ifaceType reflect.Type) []string {
 
 	// repeat (or do it for the first time) for all by-value-receiver methods
 	fields = append(fields, deepFieldsImpl(ifaceType)...)
+
 	return fields
 }
 
@@ -351,6 +354,10 @@ func deepFieldsImpl(ifaceType reflect.Type) []string {
 	for i := 0; i < elements; i++ {
 		var v reflect.StructField
 		v = ifaceType.Field(i)
+
+		if len(v.Name) == 0 || v.Name[0:1] != strings.ToUpper(v.Name[0:1]) {
+			continue
+		}
 
 		fields = append(fields, v.Name)
 	}
