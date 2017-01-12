@@ -3,11 +3,11 @@ package copier
 import (
 	"fmt"
 
-	log "github.com/Sirupsen/logrus"
 	"reflect"
 	"strings"
 )
 
+// Copy copies one value to another. If you read this you probably came here for this function :-)
 func Copy(toValue interface{}, fromValue interface{}) (err error) {
 	from := reflect.ValueOf(fromValue)
 	to := reflect.ValueOf(toValue)
@@ -15,9 +15,9 @@ func Copy(toValue interface{}, fromValue interface{}) (err error) {
 	return copyImpl(to, from)
 }
 
+// copyImpl main function implementation.
+// Differs only in accepting type to prevent pointer-to-value convertion each time
 func copyImpl(to reflect.Value, from reflect.Value) error {
-	log.Errorf("======begin copyImpl")
-	defer log.Errorf("======end copyImpl")
 	var (
 		isSlice  bool
 		isStruct bool
@@ -64,14 +64,11 @@ func copyImpl(to reflect.Value, from reflect.Value) error {
 		return nil
 	}
 
-	log.Infof("toReducted.Type() = %+v isStruct = %t", toReducted.Type(), isStruct)
 	// destination is a struct
 	if isStruct {
 		for _, name := range deepFields(toReducted.Type()) {
-			log.Infof("NAME = %s", name)
 			fromField := fieldByName(fromReducted, name)
 			fromMethod := methodByName(fromReducted, name)
-			log.Errorf("name = %+v fromField = %+v fromMethod = %+v", name, fromField, fromMethod)
 
 			var from reflect.Value
 
@@ -84,7 +81,6 @@ func copyImpl(to reflect.Value, from reflect.Value) error {
 			}
 
 			toField := fieldByName(toReducted, name)
-			log.Errorf("toField = %+v", toField)
 
 			// if struct field is a slice we must create it here
 			if toField.IsValid() && toField.Kind() == reflect.Slice && toField.IsNil() {
@@ -114,18 +110,17 @@ func copyImpl(to reflect.Value, from reflect.Value) error {
 				continue
 			}
 
-			log.Infof("[1]")
 			_, accumulatedError = copyValue(toField, from, accumulatedError)
 		}
 		return accumulatedError
 	}
 
 	var err error
-	log.Infof("[2]")
 	_, err = copyValue(to, from, accumulatedError)
 	return err
 }
 
+// fieldByName get field by name if possible
 func fieldByName(base reflect.Value, name string) reflect.Value {
 	if !base.IsValid() {
 		return reflect.Zero(base.Type())
@@ -140,6 +135,7 @@ func fieldByName(base reflect.Value, name string) reflect.Value {
 	return reflect.Zero(base.Type())
 }
 
+// methodByName get method by name if possible
 func methodByName(base reflect.Value, name string) reflect.Value {
 	if !base.IsValid() {
 		return reflect.Zero(base.Type())
@@ -160,6 +156,7 @@ func methodByName(base reflect.Value, name string) reflect.Value {
 	return reflect.Zero(base.Type())
 }
 
+// copyValue tries to copy field using all supported methods
 func copyValue(to reflect.Value, from reflect.Value, accumulatedError error) (bool, error) {
 	if !to.IsValid() {
 		return false, fmt.Errorf("destination is invalid")
@@ -168,8 +165,6 @@ func copyValue(to reflect.Value, from reflect.Value, accumulatedError error) (bo
 	if !from.IsValid() {
 		return false, fmt.Errorf("source is invalid")
 	}
-
-	log.Errorf("======copyValue")
 
 	// this copy will work if and only if both values are primitive types
 	err := tryCopyPrimitive(to, from)
@@ -186,6 +181,7 @@ func copyValue(to reflect.Value, from reflect.Value, accumulatedError error) (bo
 	return copied, accumulatedError
 }
 
+// tryCopyPrimitive is invoked when direct assignment is far enough
 func tryCopyPrimitive(dest reflect.Value, src reflect.Value) error {
 	if !dest.IsValid() {
 		return fmt.Errorf("destination is invalid")
@@ -207,12 +203,12 @@ func tryCopyPrimitive(dest reflect.Value, src reflect.Value) error {
 		return fmt.Errorf("destination type %v is a pointer, pointers must not be assigned in this way", dest.Type())
 	}
 
-	log.Infof("PRIMITIVE")
 	dest.Set(src)
 
 	return nil
 }
 
+// tryDeepCopyPtr goes through the chain of pointers, creating missing objects and, finally, invoking the recursion on the last step
 func tryDeepCopyPtr(toField reflect.Value, fromField reflect.Value, accumulatedError error) (bool, error) {
 	toDepth := depth(toField.Type())
 	fromDepth := depth(fromField.Type())
@@ -237,8 +233,14 @@ func tryDeepCopyPtr(toField reflect.Value, fromField reflect.Value, accumulatedE
 		toExact := exactValue(toField)
 		fromExact := exactValue(fromField)
 
-		log.Infof("DEEP PTR")
-		err := copyImpl(toExact, fromExact)
+		var err error
+
+		// structures may contain methods, which are connected with struct pointer, not by value
+		if toExact.Kind() == reflect.Struct {
+			err = copyImpl(toField, fromField)
+		} else {
+			err = copyImpl(toExact, fromExact)
+		}
 
 		if nil != err {
 			copied = false
@@ -255,6 +257,7 @@ func tryDeepCopyPtr(toField reflect.Value, fromField reflect.Value, accumulatedE
 	return copied, accumulatedError
 }
 
+// tryDeepCopyStruct tries to copy field as a structure
 func tryDeepCopyStruct(toField reflect.Value, fromField reflect.Value, accumulatedError error) (bool, error) {
 	deepCopyRequired := toField.Type().Kind() == reflect.Struct && fromField.Type().Kind() == reflect.Struct && toField.CanSet()
 
@@ -262,7 +265,6 @@ func tryDeepCopyStruct(toField reflect.Value, fromField reflect.Value, accumulat
 	if toField.Kind() == reflect.Ptr && toField.IsNil() {
 	}
 	if deepCopyRequired {
-		log.Infof("DEEP STRUCT")
 		err := copyImpl(toField, fromField)
 		if nil != err {
 			copied = false
@@ -278,25 +280,39 @@ func tryDeepCopyStruct(toField reflect.Value, fromField reflect.Value, accumulat
 	return copied, accumulatedError
 }
 
+// copySliceImpl copies one slice to another, taking cate about empty slices and their types
 func copySliceImpl(toExact reflect.Value, toKind reflect.Kind, toType reflect.Type,
 	fromExact reflect.Value, fromKind reflect.Kind, fromType reflect.Type, amount int, accumulatedError error) error {
 
+	if toKind != reflect.Slice {
+		return fmt.Errorf("destination is not a slice: %v", toKind)
+	}
+
+	if toExact.IsNil() {
+		toExact.Set(reflect.MakeSlice(toType, 0, 0))
+	}
+
+	originalLen := toExact.Len()
+
+	newSlice := reflect.MakeSlice(toType, amount, amount)
+	toExact.Set(reflect.AppendSlice(toExact, newSlice))
+
 	if fromKind == reflect.Slice {
-		if toExact.IsNil() {
-			toExact.Set(reflect.MakeSlice(toType, 0, amount))
-		}
-
-		newSlice := reflect.MakeSlice(toType, amount, amount)
-		originalLen := toExact.Len()
-		toExact.Set(reflect.AppendSlice(toExact, newSlice))
-
 		for i := 0; i < amount; i++ {
-			var newT reflect.Value
+			newT := reflect.New(toType.Elem())
+			newIndirected := reflect.Indirect(newT)
 
-			newT = reflect.Indirect(reflect.New(toType.Elem()))
+			var destination reflect.Value
+			if newIndirected.Kind() == reflect.Struct {
+				destination = newT
+			} else {
+				destination = newIndirected
+			}
+			source := structAddr(fromExact.Index(i))
 
-			err := copyImpl(newT, fromExact.Index(i))
-			toExact.Index(originalLen + i).Set(newT)
+			err := copyImpl(destination, source)
+
+			toExact.Index(originalLen + i).Set(newIndirected)
 
 			if nil != err {
 				if nil == accumulatedError {
@@ -306,17 +322,44 @@ func copySliceImpl(toExact reflect.Value, toKind reflect.Kind, toType reflect.Ty
 				accumulatedError = fmt.Errorf("error copying %v\n%v", err, accumulatedError)
 			}
 		}
-	} else if fromType.AssignableTo(toType.Elem()) {
-		return fmt.Errorf("copy from element to slice unsupported\n%v", accumulatedError)
 	} else {
+		newT := reflect.New(toType.Elem())
+		newIndirected := reflect.Indirect(newT)
+
+		var destination reflect.Value
+		if newIndirected.Kind() == reflect.Struct {
+			destination = newT
+		} else {
+			destination = newIndirected
+		}
+		source := structAddr(fromExact)
+
+		err := copyImpl(destination, source)
+		toExact.Index(originalLen).Set(newIndirected)
+
+		if nil != err {
+			if nil == accumulatedError {
+				return err
+			}
+			return fmt.Errorf("error copying %v\n%v", err, accumulatedError)
+		}
+
 		return fmt.Errorf("source slice type unsupported\n%v", accumulatedError)
 	}
 
 	return nil
 }
 
+// structAddr returns addr of a structure value if it is possible to get it
+func structAddr(val reflect.Value) reflect.Value {
+	if val.IsValid() && val.Kind() == reflect.Struct && val.CanAddr() {
+		return val.Addr()
+	}
+	return val
+}
+
+// deepFields returns all public field and methods names
 func deepFields(ifaceType reflect.Type) []string {
-	log.Infof("deepFields = %v", ifaceType)
 	fields := []string{}
 
 	if ifaceType.Kind() == reflect.Ptr && ifaceType.Elem().Kind() == reflect.Struct {
@@ -343,6 +386,10 @@ func deepFieldsImpl(ifaceType reflect.Type) []string {
 		var v reflect.Method
 		v = ifaceType.Method(i)
 
+		if len(v.Name) == 0 || v.Name[0:1] != strings.ToUpper(v.Name[0:1]) {
+			continue
+		}
+
 		fields = append(fields, v.Name)
 	}
 
@@ -365,16 +412,19 @@ func deepFieldsImpl(ifaceType reflect.Type) []string {
 	return fields
 }
 
+// deepLen returns amount of values after pointer chain.
+// Amount is equal to slice length or to 1 if deepest type is not a slice
 func deepLen(array reflect.Value) int {
-	if array.Kind() == reflect.Slice {
+	if array.IsValid() && array.Kind() == reflect.Slice {
 		return array.Len()
-	} else if array.Kind() == reflect.Ptr {
+	} else if array.IsValid() && array.Kind() == reflect.Ptr {
 		return deepLen(array.Elem())
 	}
 
 	return 1
 }
 
+// deepKind returns kind of a deepest non-pointer type
 func deepKind(ptr reflect.Type) reflect.Kind {
 	if ptr.Kind() == reflect.Ptr {
 		return deepKind(ptr.Elem())
@@ -383,6 +433,7 @@ func deepKind(ptr reflect.Type) reflect.Kind {
 	return ptr.Kind()
 }
 
+// depth returns length of a pointer chain
 func depth(ptr reflect.Type) int {
 	if ptr.Kind() == reflect.Ptr {
 		return 1 + depth(ptr.Elem())
@@ -391,6 +442,7 @@ func depth(ptr reflect.Type) int {
 	return 0
 }
 
+// deepType returns type of first non-pointer
 func deepType(ptrType reflect.Type) reflect.Type {
 	if ptrType.Kind() == reflect.Ptr {
 		return deepType(ptrType.Elem())
@@ -399,8 +451,10 @@ func deepType(ptrType reflect.Type) reflect.Type {
 	return ptrType
 }
 
+// reductPointers eliminates all pointers except the last one.
+// Results of this function may be useful to obtain both structure fields and methods
 func reductPointers(ptr reflect.Value) reflect.Value {
-	if ptr.Kind() == reflect.Ptr && ptr.Elem().Kind() == reflect.Ptr {
+	if ptr.IsValid() && ptr.Kind() == reflect.Ptr && ptr.Elem().Kind() == reflect.Ptr {
 		return reductPointers(ptr.Elem())
 	}
 	return ptr

@@ -1,7 +1,7 @@
 package copier
 
 import (
-	// "encoding/json"
+	"encoding/json"
 
 	"reflect"
 	"unsafe"
@@ -10,11 +10,11 @@ import (
 )
 
 type User struct {
-	Name  string
-	Role  string
-	Age   int32
-	Notes []string
-	flags []byte
+	StringValue4 string
+	Role         string
+	Age          int32
+	Notes        []string
+	flags        []byte
 }
 
 func (user *User) DoubleAge() int32 {
@@ -22,13 +22,13 @@ func (user *User) DoubleAge() int32 {
 }
 
 type Employee struct {
-	Name      string
-	Age       int32
-	EmployeID int64
-	DoubleAge int32
-	SuperRule string
-	Notes     []string
-	flags     []byte
+	StringValue4 string
+	Age          int32
+	EmployeID    int64
+	DoubleAge    int32
+	SuperRule    string
+	Notes        []string
+	flags        []byte
 }
 
 type Base struct {
@@ -326,13 +326,13 @@ func TestAssignableTypeMethod(t *testing.T) {
 }
 
 func TestCopyStruct(t *testing.T) {
-	user := User{Name: "Jinzhu", Age: 18, Role: "Admin", Notes: []string{"hello world"}, flags: []byte{'x'}}
+	user := User{StringValue4: "Jinzhu", Age: 18, Role: "Admin", Notes: []string{"hello world"}, flags: []byte{'x'}}
 	employee := Employee{}
 
 	Copy(&employee, &user)
 
-	if employee.Name != "Jinzhu" {
-		t.Errorf("Name haven't been copied correctly.")
+	if employee.StringValue4 != "Jinzhu" {
+		t.Errorf("StringValue4 haven't been copied correctly.")
 	}
 	if employee.Age != 18 {
 		t.Errorf("Age haven't been copied correctly.")
@@ -367,251 +367,257 @@ func TestCopyStruct(t *testing.T) {
 	}
 }
 
-// func TestCopySlice(t *testing.T) {
-// 	user := User{Name: "Jinzhu", Age: 18, Role: "Admin", Notes: []string{"hello world"}}
-// 	users := []User{{Name: "jinzhu 2", Age: 30, Role: "Dev"}}
-// 	employees := []Employee{}
+func TestCopySlice(t *testing.T) {
+	user := User{StringValue4: "Jinzhu", Age: 18, Role: "Admin", Notes: []string{"hello world"}}
+	users := []User{{StringValue4: "jinzhu 2", Age: 30, Role: "Dev"}}
+	employees := []Employee{}
 
-// 	Copy(&employees, &user)
-// 	if len(employees) != 1 {
-// 		t.Errorf("Should only have one elem when copy struct to slice")
-// 	}
+	Copy(&employees, &user)
+	if len(employees) != 1 {
+		t.Errorf("Should only have one elem when copy struct to slice, got %d", len(employees))
+	}
 
-// 	Copy(&employees, &users)
-// 	if len(employees) != 2 {
-// 		t.Errorf("Should have two elems when copy additional slice to slice")
-// 	}
+	Copy(&employees, &users)
+	if len(employees) != 2 {
+		t.Errorf("Should have two elems when copy additional slice to slice")
+	}
 
-// 	if employees[0].Name != "Jinzhu" {
-// 		t.Errorf("Name haven't been copied correctly.")
-// 	}
-// 	if employees[0].Age != 18 {
-// 		t.Errorf("Age haven't been copied correctly.")
-// 	}
-// 	if employees[0].DoubleAge != 36 {
-// 		t.Errorf("Copy copy from method doesn't work")
-// 	}
-// 	if employees[0].SuperRule != "Super Admin" {
-// 		t.Errorf("Copy Attributes should support copy to method")
-// 	}
+	if employees[0].StringValue4 != "Jinzhu" {
+		t.Errorf("StringValue4 haven't been copied correctly.")
+	}
+	if employees[0].Age != 18 {
+		t.Errorf("Age haven't been copied correctly.")
+	}
+	if employees[0].DoubleAge != 36 {
+		t.Errorf("Copy from method doesn't work %v", employees[0].DoubleAge)
+	}
+	if employees[0].SuperRule != "Super Admin" {
+		t.Errorf("Copy should support copy to method")
+	}
 
-// 	if employees[1].Name != "jinzhu 2" {
-// 		t.Errorf("Name haven't been copied correctly.")
-// 	}
-// 	if employees[1].Age != 30 {
-// 		t.Errorf("Age haven't been copied correctly.")
-// 	}
-// 	if employees[1].DoubleAge != 60 {
-// 		t.Errorf("Copy copy from method doesn't work")
-// 	}
-// 	if employees[1].SuperRule != "Super Dev" {
-// 		t.Errorf("Copy Attributes should support copy to method")
-// 	}
+	if employees[1].StringValue4 != "jinzhu 2" {
+		t.Errorf("StringValue4 haven't been copied correctly.")
+	}
+	if employees[1].Age != 30 {
+		t.Errorf("Age haven't been copied correctly.")
+	}
+	if employees[1].DoubleAge != 60 {
+		t.Errorf("Copy from method doesn't work")
+	}
+	if employees[1].SuperRule != "Super Dev" {
+		t.Errorf("Copy should support copy to method")
+	}
 
-// 	employee := employees[0]
-// 	user.Notes = append(user.Notes, "welcome")
-// 	if !reflect.DeepEqual(user.Notes, []string{"hello world", "welcome"}) {
-// 		t.Errorf("User's Note should be changed")
-// 	}
+	employee := employees[0]
+	user.Notes = append(user.Notes, "welcome")
+	if !reflect.DeepEqual(user.Notes, []string{"hello world", "welcome"}) {
+		t.Errorf("User's Note should be changed")
+	}
 
-// 	if !reflect.DeepEqual(employee.Notes, []string{"hello world"}) {
-// 		t.Errorf("Employee's Note should not be changed")
-// 	}
+	if !reflect.DeepEqual(employee.Notes, []string{"hello world"}) {
+		t.Errorf("Employee's Note should not be changed")
+	}
 
-// 	employee.Notes = append(employee.Notes, "golang")
-// 	if !reflect.DeepEqual(employee.Notes, []string{"hello world", "golang"}) {
-// 		t.Errorf("Employee's Note should be changed")
-// 	}
+	employee.Notes = append(employee.Notes, "golang")
+	if !reflect.DeepEqual(employee.Notes, []string{"hello world", "golang"}) {
+		t.Errorf("Employee's Note should be changed")
+	}
 
-// 	if !reflect.DeepEqual(user.Notes, []string{"hello world", "welcome"}) {
-// 		t.Errorf("Employee's Note should not be changed")
-// 	}
-// }
+	if !reflect.DeepEqual(user.Notes, []string{"hello world", "welcome"}) {
+		t.Errorf("Employee's Note should not be changed")
+	}
+}
 
-// func TestCopySliceWithPtr(t *testing.T) {
-// 	defer panicHandler(t)
+func TestCopySliceWithPtr(t *testing.T) {
+	defer panicHandler(t)
 
-// 	user := User{Name: "Jinzhu", Age: 18, Role: "Admin", Notes: []string{"hello world"}}
-// 	user2 := &User{Name: "jinzhu 2", Age: 30, Role: "Dev"}
-// 	users := []*User{user2}
-// 	employees := []*Employee{}
+	user := User{StringValue4: "Jinzhu", Age: 18, Role: "Admin", Notes: []string{"hello world"}}
+	user2 := &User{StringValue4: "jinzhu 2", Age: 30, Role: "Dev"}
+	users := []*User{user2}
+	employees := []*Employee{}
 
-// 	Copy(&employees, &user)
-// 	if len(employees) != 1 {
-// 		t.Errorf("Should only have one elem when copy struct to slice")
-// 	}
+	Copy(&employees, &user)
+	if len(employees) != 1 {
+		t.Errorf("Should only have one elem when copy struct to slice")
+	}
 
-// 	Copy(&employees, &users)
-// 	if len(employees) != 2 {
-// 		t.Errorf("Should have two elems when copy additional slice to slice")
-// 	}
+	Copy(&employees, &users)
+	if len(employees) != 2 {
+		t.Errorf("Should have two elems when copy additional slice to slice")
+	}
 
-// 	if employees[0].Name != "Jinzhu" {
-// 		t.Errorf("Name haven't been copied correctly.")
-// 	}
-// 	if employees[0].Age != 18 {
-// 		t.Errorf("Age haven't been copied correctly.")
-// 	}
-// 	if employees[0].DoubleAge != 36 {
-// 		t.Errorf("Copy copy from method doesn't work")
-// 	}
-// 	if employees[0].SuperRule != "Super Admin" {
-// 		t.Errorf("Copy Attributes should support copy to method")
-// 	}
+	if employees[0].StringValue4 != "Jinzhu" {
+		t.Errorf("StringValue4 haven't been copied correctly.")
+	}
+	if employees[0].Age != 18 {
+		t.Errorf("Age haven't been copied correctly.")
+	}
+	if employees[0].DoubleAge != 36 {
+		t.Errorf("Copy copy from method doesn't work")
+	}
+	if employees[0].SuperRule != "Super Admin" {
+		t.Errorf("Copy Attributes should support copy to method")
+	}
 
-// 	if employees[1].Name != "jinzhu 2" {
-// 		t.Errorf("Name haven't been copied correctly.")
-// 	}
-// 	if employees[1].Age != 30 {
-// 		t.Errorf("Age haven't been copied correctly.")
-// 	}
-// 	if employees[1].DoubleAge != 60 {
-// 		t.Errorf("Copy copy from method doesn't work")
-// 	}
-// 	if employees[1].SuperRule != "Super Dev" {
-// 		t.Errorf("Copy Attributes should support copy to method")
-// 	}
+	if employees[1].StringValue4 != "jinzhu 2" {
+		t.Errorf("StringValue4 haven't been copied correctly.")
+	}
+	if employees[1].Age != 30 {
+		t.Errorf("Age haven't been copied correctly.")
+	}
+	if employees[1].DoubleAge != 60 {
+		t.Errorf("Copy copy from method doesn't work")
+	}
+	if employees[1].SuperRule != "Super Dev" {
+		t.Errorf("Copy Attributes should support copy to method")
+	}
 
-// 	employee := employees[0]
-// 	user.Notes = append(user.Notes, "welcome")
-// 	if !reflect.DeepEqual(user.Notes, []string{"hello world", "welcome"}) {
-// 		t.Errorf("User's Note should be changed")
-// 	}
+	employee := employees[0]
+	user.Notes = append(user.Notes, "welcome")
+	if !reflect.DeepEqual(user.Notes, []string{"hello world", "welcome"}) {
+		t.Errorf("User's Note should be changed")
+	}
 
-// 	if !reflect.DeepEqual(employee.Notes, []string{"hello world"}) {
-// 		t.Errorf("Employee's Note should not be changed")
-// 	}
+	if !reflect.DeepEqual(employee.Notes, []string{"hello world"}) {
+		t.Errorf("Employee's Note should not be changed")
+	}
 
-// 	employee.Notes = append(employee.Notes, "golang")
-// 	if !reflect.DeepEqual(employee.Notes, []string{"hello world", "golang"}) {
-// 		t.Errorf("Employee's Note should be changed")
-// 	}
+	employee.Notes = append(employee.Notes, "golang")
+	if !reflect.DeepEqual(employee.Notes, []string{"hello world", "golang"}) {
+		t.Errorf("Employee's Note should be changed")
+	}
 
-// 	if !reflect.DeepEqual(user.Notes, []string{"hello world", "welcome"}) {
-// 		t.Errorf("Employee's Note should not be changed")
-// 	}
-// }
+	if !reflect.DeepEqual(user.Notes, []string{"hello world", "welcome"}) {
+		t.Errorf("Employee's Note should not be changed")
+	}
+}
 
-// func BenchmarkCopyStruct(b *testing.B) {
-// 	user := User{Name: "Jinzhu", Age: 18, Role: "Admin", Notes: []string{"hello world"}}
-// 	for x := 0; x < b.N; x++ {
-// 		Copy(&Employee{}, &user)
-// 	}
-// }
+func BenchmarkCopyStruct(b *testing.B) {
+	user := User{StringValue4: "Jinzhu", Age: 18, Role: "Admin", Notes: []string{"hello world"}}
+	for x := 0; x < b.N; x++ {
+		Copy(&Employee{}, &user)
+	}
+}
 
-// func BenchmarkNamaCopy(b *testing.B) {
-// 	user := User{Name: "Jinzhu", Age: 18, Role: "Admin", Notes: []string{"hello world"}}
-// 	for x := 0; x < b.N; x++ {
-// 		employee := &Employee{
-// 			Name:      user.Name,
-// 			Age:       user.Age,
-// 			DoubleAge: user.DoubleAge(),
-// 			Notes:     user.Notes,
-// 		}
-// 		employee.Role(user.Role)
-// 	}
-// }
+func BenchmarkNamaCopy(b *testing.B) {
+	user := User{StringValue4: "Jinzhu", Age: 18, Role: "Admin", Notes: []string{"hello world"}}
+	for x := 0; x < b.N; x++ {
+		employee := &Employee{
+			StringValue4: user.StringValue4,
+			Age:          user.Age,
+			DoubleAge:    user.DoubleAge(),
+			Notes:        user.Notes,
+		}
+		employee.Role(user.Role)
+	}
+}
 
-// func BenchmarkJsonMarshalCopy(b *testing.B) {
-// 	user := User{Name: "Jinzhu", Age: 18, Role: "Admin", Notes: []string{"hello world"}}
-// 	for x := 0; x < b.N; x++ {
-// 		data, _ := json.Marshal(user)
-// 		var employee Employee
-// 		json.Unmarshal(data, &employee)
-// 		employee.DoubleAge = user.DoubleAge()
-// 		employee.Role(user.Role)
-// 	}
-// }
+func BenchmarkJsonMarshalCopy(b *testing.B) {
+	user := User{StringValue4: "Jinzhu", Age: 18, Role: "Admin", Notes: []string{"hello world"}}
+	for x := 0; x < b.N; x++ {
+		data, _ := json.Marshal(user)
+		var employee Employee
+		json.Unmarshal(data, &employee)
+		employee.DoubleAge = user.DoubleAge()
+		employee.Role(user.Role)
+	}
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-type GoaCommonRoute struct {
-	Distance *float64
-	Duration *float64
-	Geometry *GoaCommonGeometry
-	Legs     GoaCommonLegCollection
+type ComplicatedStruct1 struct {
+	FloatValue1           *float64
+	FloatValue2           *float64
+	ComplicatedStruct2Ptr *ComplicatedStruct2
+	ComplicatedArray1Val  ComplicatedArray1
 }
 
-type GoaCommonGeometry struct {
-	Coordinates [][]float64
-	Type        string
+type ComplicatedStruct2 struct {
+	FloatArrayVal2 [][]float64
+	StringValue1   string
 }
 
-type GoaCommonLegCollection []*GoaCommonLeg
+type ComplicatedArray1 []*ComplicatedStruct3
 
-type GoaCommonLeg struct {
-	Distance float64
-	Duration float64
-	Steps    GoaCommonStepCollection
-	Summary  string
+type ComplicatedStruct3 struct {
+	FloatValue1          float64
+	FloatValue2          float64
+	ComplicatedArray2Val ComplicatedArray2
+	StringValue2         string
 }
 
-type GoaCommonStepCollection []*GoaCommonStep
+type ComplicatedArray2 []*ComplicatedStruct4
 
-type GoaCommonStep struct {
-	Distance float64
-	Duration float64
-	Geometry *GoaCommonGeometry
-	Maneuver *GoaCommonManeuver
-	Mode     string
-	Name     string
+type ComplicatedStruct4 struct {
+	FloatValue1           float64
+	FloatValue2           float64
+	ComplicatedStruct2Ptr *ComplicatedStruct2
+	ComplicatedStruct5Ptr *ComplicatedStruct5
+	StringValue3          string
+	StringValue4          string
 }
 
-type GoaCommonManeuver struct {
-	BearingAfter  float64
-	BearingBefore float64
-	Location      []float64
-	Modifier      string
-	Type          string
+type ComplicatedStruct5 struct {
+	StringValue5   float64
+	StringValue6   float64
+	FloatArrayVal1 []float64
+	StringValue7   string
+	StringValue1   string
 }
 
 func TestPointerArrayComplex(t *testing.T) {
 	defer panicHandler(t)
 
-	distance := 13.666
-	duration := 666.13
+	FloatValue1 := 13.666
+	FloatValue2 := 666.13
 
-	geometry := &GoaCommonGeometry{
-		Coordinates: [][]float64{{1.0, 2.0}},
-		Type:        "line",
+	ComplicatedStruct2Ptr := &ComplicatedStruct2{
+		FloatArrayVal2: [][]float64{{1.0, 2.0}},
+		StringValue1:   "line",
 	}
 
-	ts := []*GoaCommonRoute{
+	src := []*ComplicatedStruct1{
 		{
-			Distance: &distance,
-			Duration: &duration,
-			Geometry: geometry,
-			Legs: []*GoaCommonLeg{
+			FloatValue1:           &FloatValue1,
+			FloatValue2:           &FloatValue2,
+			ComplicatedStruct2Ptr: ComplicatedStruct2Ptr,
+			ComplicatedArray1Val: []*ComplicatedStruct3{
 				{
-					Distance: distance,
-					Duration: duration,
-					Steps: []*GoaCommonStep{
+					FloatValue1: FloatValue1,
+					FloatValue2: FloatValue2,
+					ComplicatedArray2Val: []*ComplicatedStruct4{
 						{
-							Distance: distance,
-							Duration: duration,
-							Geometry: geometry,
-							Maneuver: &GoaCommonManeuver{
-								BearingAfter:  3.0,
-								BearingBefore: 4.0,
-								Location:      []float64{6.0, 8.0},
-								Modifier:      "affine",
-								Type:          "polyline",
+							FloatValue1:           FloatValue1,
+							FloatValue2:           FloatValue2,
+							ComplicatedStruct2Ptr: ComplicatedStruct2Ptr,
+							ComplicatedStruct5Ptr: &ComplicatedStruct5{
+								StringValue5:   3.0,
+								StringValue6:   4.0,
+								FloatArrayVal1: []float64{6.0, 8.0},
+								StringValue7:   "affine",
+								StringValue1:   "polyline",
 							},
-							Mode: "GOD MODE",
-							Name: "like a boss",
+							StringValue3: "GOD MODE",
+							StringValue4: "like a boss",
 						},
 					},
-					Summary: "Happy New Year!",
+					StringValue2: "Happy New Year!",
 				},
 			},
 		},
 	}
 
-	ts3 := []*GoaCommonRoute{}
+	dest := []*ComplicatedStruct1{}
 
-	err := Copy(&ts3, &ts)
+	err := Copy(&dest, &src)
 	if err != nil {
 		t.Errorf("error copying data: %+v", err)
+		return
+	}
+
+	if !reflect.DeepEqual(*dest[0], *src[0]) {
+		t.Errorf("expected: %+v got: %+v", *src[0], *dest[0])
+		return
 	}
 }
 
